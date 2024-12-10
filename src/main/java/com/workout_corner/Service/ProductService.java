@@ -18,12 +18,33 @@ public class ProductService {
     ProductRepo productRepo;
     @Autowired
     CategoryRepo categoryRepo;
+
     public Product createProduct(ProductDTO productDTO) {
         Category category = categoryRepo.findById(productDTO.getCategoryId())
                 .orElseThrow(() -> new IllegalArgumentException("Category not found"));
+
         Product product = ProductMapper.toEntity(productDTO, category);
         product.setCreatedAt(Instant.now());
-       return productRepo.save(product);
+        product.setImage(productDTO.getImage()); // Handle image data here
+
+        return productRepo.save(product);
+    }
+    public Product editProduct(Long id, ProductDTO productDTO) {
+        Product product = productRepo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found"));
+
+        Category category = categoryRepo.findById(productDTO.getCategoryId())
+                .orElseThrow(() -> new IllegalArgumentException("Category not found"));
+
+        product.setName(productDTO.getName());
+        product.setDescription(productDTO.getDescription());
+        product.setPrice(productDTO.getPrice());
+        product.setCategory(category);
+        if (productDTO.getImage() != null) {
+            product.setImage(productDTO.getImage());
+        }
+
+        return productRepo.save(product);
     }
 
     public Product getProductById(Long id) {
@@ -37,23 +58,6 @@ public class ProductService {
 
     public List<Product> getAllProductsByCategoryId(Long categoryId) {
        return productRepo.findByCategoryId(categoryId);
-    }
-
-    public Product editProduct(Long id, ProductDTO productDTO) {
-        Product product = productRepo.findById(id)
-                .orElseThrow(() -> new IllegalArgumentException("Product not found"));
-
-        Category category = categoryRepo.findById(productDTO.getCategoryId())
-                .orElseThrow(() -> new IllegalArgumentException("Category not found"));
-
-        product.setName(productDTO.getName());
-        product.setDescription(productDTO.getDescription());
-        product.setCategory(category);
-        product.setPrice(productDTO.getPrice());
-        product.setImage(productDTO.getImage());
-
-
-      return productRepo.save(product);
     }
 
     public void deleteProduct(Long id) {
