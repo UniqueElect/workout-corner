@@ -41,7 +41,10 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable)
                 .authorizeHttpRequests(req ->
                         req
-                                .requestMatchers("/api/v1/auth/**") .permitAll()
+                                .requestMatchers("/api/auth/**") .permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/categories/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/products/**").permitAll()
+                                .requestMatchers(HttpMethod.GET, "/api/reviews/**").permitAll()
                                 .requestMatchers("/api/users/**").hasRole("ADMIN")
                                 .requestMatchers(HttpMethod.POST, "/api/categories/**").hasAnyRole("ADMIN", "MODERATOR")
                                 .requestMatchers(HttpMethod.POST, "/api/products/**").hasAnyRole("ADMIN", "MODERATOR")
