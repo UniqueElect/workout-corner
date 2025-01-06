@@ -1,17 +1,18 @@
 package com.workout_corner.Auth;
 
-import com.fasterxml.jackson.databind.ObjectMapper;
 import com.workout_corner.Config.JwtService;
 import com.workout_corner.Entity.Role;
 import com.workout_corner.Entity.User;
+import com.workout_corner.Exceptions.AlreadyTakenException;
 import com.workout_corner.Repo.UserRepo;
 import com.workout_corner.Request.AuthRequest;
 import com.workout_corner.Request.AuthResponse;
 import com.workout_corner.Request.RegisterRequest;
 
-import jakarta.servlet.http.HttpServletResponse;
+import com.workout_corner.Token.Token;
+import com.workout_corner.Token.TokenRepo;
+import com.workout_corner.Token.TokenType;
 import lombok.RequiredArgsConstructor;
-import org.springframework.http.HttpHeaders;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -21,24 +22,34 @@ import org.springframework.stereotype.Service;
 @RequiredArgsConstructor
 public class AuthService {
     private final UserRepo repository;
+    private final TokenRepo tokenRepo;
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final AuthenticationManager authenticationManager;
 
-    public AuthResponse register(RegisterRequest request) {
+    public AuthResponse register(RegisterRequest request) throws AlreadyTakenException {
+        repository.findByUsername(request.getUsername())
+                .ifPresent(user -> {
+                    throw new AlreadyTakenException("This username is already taken.");
+                });
+        repository.findByEmail(request.getEmail())
+                .ifPresent(email -> {
+                    throw new AlreadyTakenException("This email is already taken");
+                });
+
         var user = User.builder()
                 .username(request.getUsername())
                 .email(request.getEmail())
                 .password(passwordEncoder.encode(request.getPassword()))
-                .role(Role.USER)
+                .role(Role.ADMIN)
                 .build();
-        repository.save(user);
+        var savedUser = repository.save(user);
         var jwtToken = jwtService.generateToken(user);
+        saveUserToken(savedUser, jwtToken);
         return AuthResponse.builder()
                 .token(jwtToken)
                 .build();
     }
-
     public AuthResponse authenticate(AuthRequest request) {
         authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
@@ -49,11 +60,32 @@ public class AuthService {
         var user = repository.findByUsername(request.getUsername())
                 .orElseThrow();
         var jwtToken = jwtService.generateToken(user);
+        revokeAllUserTokens(user);
+        saveUserToken(user, jwtToken);
         return AuthResponse.builder()
                 .token(jwtToken)
                 .build();
     }
-
+    private void revokeAllUserTokens(User user){
+        var validUserTokens = tokenRepo.findAllValidTokensByUser(user.getId());
+        if (validUserTokens.isEmpty())
+            return;
+        validUserTokens.forEach(t -> {
+            t.setExpired(true);
+            t.setRevoked(true);
+        });
+        tokenRepo.saveAll(validUserTokens);
+    }
+    private void saveUserToken(User user, String jwtToken) {
+        var token = Token.builder()
+                .user(user)
+                .token(jwtToken)
+                .tokenType(TokenType.BEARER)
+                .expired(false)
+                .revoked(false)
+                .build();
+        tokenRepo.save(token);
+    }
 //    public void refreshToken(
 //            HttpServletRequest request,
 //            HttpServletResponse response

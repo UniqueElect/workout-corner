@@ -16,26 +16,27 @@ import java.util.List;
 public class ProductController {
     @Autowired
     ProductService productService;
-    @PostMapping("/create")
-    public Product createProduct(
-            @RequestPart("product") ProductDTO productDTO,
-            @RequestPart(value = "image", required = false) MultipartFile image) throws IOException {
-        if (image != null) {
-            productDTO.setImage(image.getBytes());
-        }
-        return productService.createProduct(productDTO);
-    }
-//    @PostMapping("/create")              FOR POSTMAN TESTING
+//    @PostMapping("/create")
 //    public Product createProduct(
-//            @RequestPart("product") String productJson,
+//            @RequestPart("product") ProductDTO productDTO,
 //            @RequestPart(value = "image", required = false) MultipartFile image) throws IOException {
-//        ObjectMapper objectMapper = new ObjectMapper();
-//        ProductDTO productDTO = objectMapper.readValue(productJson, ProductDTO.class);
 //        if (image != null) {
 //            productDTO.setImage(image.getBytes());
 //        }
 //        return productService.createProduct(productDTO);
 //    }
+//    FOR POSTMAN TESTING
+    @PostMapping("/create")
+    public Product createProduct(
+            @RequestPart("product") String productJson,
+            @RequestPart(value = "image", required = false) MultipartFile image) throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        ProductDTO productDTO = objectMapper.readValue(productJson, ProductDTO.class);
+        if (image != null) {
+            productDTO.setImage(image.getBytes());
+        }
+        return productService.createProduct(productDTO);
+    }
     @PostMapping("/edit/{id}")
     public Product editProduct(
             @PathVariable Long id,
