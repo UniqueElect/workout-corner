@@ -7,6 +7,7 @@ import com.workout_corner.Mapper.ProductMapper;
 import com.workout_corner.Repo.CategoryRepo;
 import com.workout_corner.Repo.ProductRepo;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Sort;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
@@ -55,7 +56,19 @@ public class ProductService {
     public List<Product> getAllProducts() {
        return productRepo.findAll();
     }
-
+    public List<Product> filter(Long min, Long max, String sortBy) {
+        min = (min == null) ? 0L : min;
+        max = (max == null) ? Long.MAX_VALUE : max;
+        Sort sort = Sort.unsorted();
+        if (sortBy != null) {
+            sort = switch (sortBy) {
+                case "priceAscending" -> Sort.by(Sort.Direction.ASC, "price");
+                case "priceDescending" -> Sort.by(Sort.Direction.DESC, "price");
+                default -> sort;
+            };
+        }
+        return productRepo.findAllByPriceBetween(min, max, sort);
+    }
     public List<Product> getAllProductsByCategoryId(Long categoryId) {
        return productRepo.findByCategoryId(categoryId);
     }

@@ -51,6 +51,12 @@ public class ProductController {
     private Product getProductById(@PathVariable Long id){
         return productService.getProductById(id);
     }
+    @GetMapping("/filter")
+    private List<Product> filter(    @RequestParam Long min,
+                                     @RequestParam Long max,
+                                     @RequestParam String sortBy){
+        return productService.filter(min, max, sortBy);
+    }
     @GetMapping("/all")
     private List<Product> getAllProducts(){
         return productService.getAllProducts();
