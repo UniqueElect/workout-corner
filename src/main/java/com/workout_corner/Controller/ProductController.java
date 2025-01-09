@@ -52,9 +52,9 @@ public class ProductController {
         return productService.getProductById(id);
     }
     @GetMapping("/filter")
-    private List<Product> filter(    @RequestParam Long min,
-                                     @RequestParam Long max,
-                                     @RequestParam String sortBy){
+    private List<Product> filter(    @RequestParam(required = false) Long min ,
+                                     @RequestParam(required = false) Long max,
+                                     @RequestParam(required = false) String sortBy){
         return productService.filter(min, max, sortBy);
     }
     @GetMapping("/all")
