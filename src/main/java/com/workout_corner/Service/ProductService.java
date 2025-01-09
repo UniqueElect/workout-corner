@@ -61,11 +61,14 @@ public class ProductService {
         max = (max == null) ? Long.MAX_VALUE : max;
         Sort sort = Sort.unsorted();
         if (sortBy != null) {
-            sort = switch (sortBy) {
-                case "priceAscending" -> Sort.by(Sort.Direction.ASC, "price");
-                case "priceDescending" -> Sort.by(Sort.Direction.DESC, "price");
-                default -> sort;
-            };
+            switch (sortBy) {
+                case "priceAscending":
+                    sort = Sort.by(Sort.Direction.ASC, "price");
+                    break;
+                case "priceDescending":
+                    sort = Sort.by(Sort.Direction.DESC, "price");
+                    break;
+            }
         }
         return productRepo.findAllByPriceBetween(min, max, sort);
     }
