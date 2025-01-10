@@ -54,8 +54,10 @@ public class ProductController {
     @GetMapping("/filter")
     private List<Product> filter(    @RequestParam(required = false) Long min ,
                                      @RequestParam(required = false) Long max,
+                                     @RequestParam(required = false) Long categoryId,
                                      @RequestParam(required = false) String sortBy){
-        return productService.filter(min, max, sortBy);
+
+        return productService.filter(min, max, categoryId, sortBy);
     }
     @GetMapping("/all")
     private List<Product> getAllProducts(){

@@ -56,7 +56,7 @@ public class ProductService {
     public List<Product> getAllProducts() {
        return productRepo.findAll();
     }
-    public List<Product> filter(Long min, Long max, String sortBy) {
+    public List<Product> filter(Long min, Long max, Long categoryId, String sortBy) {
         min = (min == null) ? 0L : min;
         max = (max == null) ? Long.MAX_VALUE : max;
         Sort sort = Sort.unsorted();
@@ -70,7 +70,7 @@ public class ProductService {
                     break;
             }
         }
-        return productRepo.findAllByPriceBetween(min, max, sort);
+        return productRepo.findAllByPriceBetweenAndCategoryId(min, max, categoryId, sort);
     }
     public List<Product> getAllProductsByCategoryId(Long categoryId) {
        return productRepo.findByCategoryId(categoryId);
