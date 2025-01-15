@@ -26,8 +26,10 @@ public class ProductService {
 
         Product product = ProductMapper.toEntity(productDTO, category);
         product.setCreatedAt(Instant.now());
-        product.setImage(productDTO.getImage()); // Handle image data here
 
+        if (productDTO.getImage() != null) {
+            product.setImage(productDTO.getImage());
+        }
         return productRepo.save(product);
     }
     public Product editProduct(Long id, ProductDTO productDTO) {
@@ -67,6 +69,24 @@ public class ProductService {
                     break;
                 case "priceDescending":
                     sort = Sort.by(Sort.Direction.DESC, "price");
+                    break;
+                case "newest":
+                    sort = Sort.by(Sort.Direction.DESC, "createdAt");
+                    break;
+                case "oldest":
+                    sort = Sort.by(Sort.Direction.ASC, "createdAt");
+                    break;
+                case "reviewsAscending":
+                    sort = Sort.by(Sort.Direction.ASC, "reviewCount");
+                    break;
+                case "reviewsDescending":
+                    sort = Sort.by(Sort.Direction.DESC, "reviewCount");
+                    break;
+                case "ratingAscending":
+                    sort = Sort.by(Sort.Direction.ASC, "averageRating");
+                    break;
+                case "ratingDescending":
+                    sort = Sort.by(Sort.Direction.DESC, "averageRating");
                     break;
             }
         }

@@ -30,4 +30,8 @@ public class Product {
     @Lob
     @Column(name = "image", columnDefinition = "LONGBLOB")
     private byte[] image;
+
+    private Double averageRating = 0.0;
+
+    private Integer reviewCount = 0;
 }
