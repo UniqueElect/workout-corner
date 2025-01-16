@@ -1,6 +1,7 @@
 package com.workout_corner.Service;
 
 import com.workout_corner.DTO.ReviewDTO;
+import com.workout_corner.Entity.Product;
 import com.workout_corner.Entity.Review;
 import com.workout_corner.Repo.ProductRepo;
 import com.workout_corner.Repo.ReviewRepo;
@@ -66,11 +67,23 @@ public class ReviewService {
         return reviewRepo.save(review);
     }
 
-
     public void deleteReview(Long id) {
-        if (!reviewRepo.existsById(id)) {
-            throw new IllegalArgumentException("Review not found");
-        }
+        Review review = reviewRepo.findById(id)
+                .orElseThrow(() -> new IllegalArgumentException("Review not found"));
+        Long productId = review.getProductId();
+        Product product = productRepo.findById(productId)
+                .orElseThrow(() -> new IllegalArgumentException("Product not found"));
         reviewRepo.deleteById(id);
+        int count = product.getReviewCount();
+        if (count == 1) {
+            product.setAverageRating(0.0);
+            product.setReviewCount(0);
+        } else {
+            double avg = product.getAverageRating();
+            avg = ((count * avg) - review.getRating()) / (count - 1);
+            product.setAverageRating(Math.round(avg * 10.0) / 10.0);
+            product.setReviewCount(count - 1);
+        }
+        productRepo.save(product);
     }
 }
