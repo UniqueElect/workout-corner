@@ -1,5 +1,6 @@
 package com.workout_corner.Controller;
 
+import com.workout_corner.Config.JwtService;
 import com.workout_corner.Entity.User;
 import com.workout_corner.Request.ChangeRoleRequest;
 import com.workout_corner.Service.UserService;
