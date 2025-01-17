@@ -33,26 +33,42 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         final String authHeader = request.getHeader("Authorization");
         final String jwt;
         final String username;
-        if (authHeader == null || !authHeader.startsWith("Bearer ")){
+        if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
         }
         jwt = authHeader.substring(7);
+        try{
         username = jwtService.extractUsername(jwt);
-        if(username != null && SecurityContextHolder.getContext().getAuthentication() == null){
+        if (username != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(username);
             var isTokenValid = tokenRepo.findByToken(jwt)
                     .map(t -> !t.isExpired() && !t.isRevoked())
                     .orElse(false);
-            if (jwtService.isTokenValid(jwt, userDetails) && isTokenValid){
+            if (!isTokenValid) {
+                sendErrorResponse(response, HttpServletResponse.SC_FORBIDDEN, "Token has been revoked");
+                return;
+            }
+            if (jwtService.isTokenValid(jwt, userDetails)) {
                 UsernamePasswordAuthenticationToken authToken = new UsernamePasswordAuthenticationToken(
                         userDetails, null, userDetails.getAuthorities());
                 authToken.setDetails(new WebAuthenticationDetailsSource().buildDetails(request));
                 SecurityContextHolder.getContext().setAuthentication(authToken);
-                System.out.println("User Authorities: " + userDetails.getAuthorities());
-
+//                System.out.println("User Authorities: " + userDetails.getAuthorities());
+              }
             }
+        } catch (io.jsonwebtoken.ExpiredJwtException e) {
+            sendErrorResponse(response, HttpServletResponse.SC_UNAUTHORIZED, "Token has expired");
+            return;
+        } catch (io.jsonwebtoken.JwtException | IllegalArgumentException e) {
+            sendErrorResponse(response, HttpServletResponse.SC_BAD_REQUEST, "Invalid token");
+            return;
         }
         filterChain.doFilter(request, response);
+    }
+    private void sendErrorResponse(HttpServletResponse response, int status, String message) throws IOException {
+        response.setStatus(status);
+        response.setContentType("application/json");
+        response.getWriter().write("{\"error\": \"" + message + "\"}");
     }
 }
