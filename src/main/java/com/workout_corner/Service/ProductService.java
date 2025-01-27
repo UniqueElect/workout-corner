@@ -35,18 +35,23 @@ public class ProductService {
     public Product editProduct(Long id, ProductDTO productDTO) {
         Product product = productRepo.findById(id)
                 .orElseThrow(() -> new IllegalArgumentException("Product not found"));
-
-        Category category = categoryRepo.findById(productDTO.getCategoryId())
-                .orElseThrow(() -> new IllegalArgumentException("Category not found"));
-
-        product.setName(productDTO.getName());
-        product.setDescription(productDTO.getDescription());
-        product.setPrice(productDTO.getPrice());
-        product.setCategory(category);
+        if (productDTO.getName() != null) {
+            product.setName(productDTO.getName());
+        }
+        if (productDTO.getDescription() != null) {
+            product.setDescription(productDTO.getDescription());
+        }
+        if (productDTO.getCategoryId() != null) {
+            Category category = categoryRepo.findById(productDTO.getCategoryId())
+                    .orElseThrow(() -> new IllegalArgumentException("Category not found"));
+            product.setCategory(category);
+        }
+        if (productDTO.getPrice() != null) {
+            product.setPrice(productDTO.getPrice());
+        }
         if (productDTO.getImage() != null) {
             product.setImage(productDTO.getImage());
         }
-
         return productRepo.save(product);
     }
 

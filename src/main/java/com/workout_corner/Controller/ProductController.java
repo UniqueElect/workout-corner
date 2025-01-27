@@ -40,8 +40,10 @@ public class ProductController {
     @PostMapping("/edit/{id}")
     public Product editProduct(
             @PathVariable Long id,
-            @RequestPart("product") ProductDTO productDTO,
+            @RequestPart(value = "product", required = false) String productJson,
             @RequestPart(value = "image", required = false) MultipartFile image) throws IOException {
+        ObjectMapper objectMapper = new ObjectMapper();
+        ProductDTO productDTO = objectMapper.readValue(productJson, ProductDTO.class);
         if (image != null) {
             productDTO.setImage(image.getBytes());
         }
