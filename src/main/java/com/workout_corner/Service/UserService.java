@@ -1,7 +1,9 @@
 package com.workout_corner.Service;
 
+import com.workout_corner.DTO.UserDto;
 import com.workout_corner.Entity.Role;
 import com.workout_corner.Entity.User;
+import com.workout_corner.Mapper.UserMapper;
 import com.workout_corner.Repo.UserRepo;
 import com.workout_corner.Request.ChangeRoleRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -15,16 +17,18 @@ public class UserService {
     @Autowired
     UserRepo userRepo;
 
-    public List<User> getAllUsers() {
-        return userRepo.findAll();
+    public List<UserDto> getAllUsers() {
+        List<User> users = userRepo.findAll();
+       return users.stream().map(UserMapper::toDTO).toList();
     }
 
-    public User getUserById(Long id) {
-       return userRepo.findById(id)
+    public UserDto getUserById(Long id) {
+       var user = userRepo.findById(id)
                .orElseThrow(() -> new IllegalArgumentException("User not found"));
+       return UserMapper.toDTO(user);
     }
 
-    public User changeRole(ChangeRoleRequest changeRoleRequest) {
+    public UserDto changeRole(ChangeRoleRequest changeRoleRequest) {
         User user = userRepo.findById(changeRoleRequest.getUserId())
                 .orElseThrow(() -> new IllegalArgumentException("User not found"));
         if (changeRoleRequest.getRole() == null ||
@@ -32,7 +36,8 @@ public class UserService {
             throw new IllegalArgumentException("Invalid role: " + changeRoleRequest.getRole());
         }
         user.setRole(changeRoleRequest.getRole());
-        return userRepo.save(user);
+        userRepo.save(user);
+        return UserMapper.toDTO(user);
     }
 
     public void deleteUser(Long id) {
