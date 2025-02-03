@@ -21,6 +21,8 @@ public class UserProfileController {
         String token = authHeader.replace("Bearer ", ""); // Убираем Bearer
         var response = new  UserProfileResponse();
         String username = jwtService.extractUsername(token);
+        Long id = jwtService.extractUserId(token);
+        response.setUserId(id);
         response.setUsername(username);
         response.setRole(userRepo.findRoleByUsername(username));
         return response;

@@ -44,7 +44,7 @@ public class AuthService {
                 .role(Role.ADMIN)
                 .build();
         var savedUser = repository.save(user);
-        var jwtToken = jwtService.generateToken(user);
+        var jwtToken = jwtService.generateToken(user, user.getId());
         saveUserToken(savedUser, jwtToken);
         return AuthResponse.builder()
                 .token(jwtToken)
@@ -59,7 +59,7 @@ public class AuthService {
         );
         var user = repository.findByUsername(request.getUsername())
                 .orElseThrow();
-        var jwtToken = jwtService.generateToken(user);
+        var jwtToken = jwtService.generateToken(user, user.getId());
         revokeAllUserTokens(user);
         saveUserToken(user, jwtToken);
         return AuthResponse.builder()

@@ -21,6 +21,9 @@ public class JwtService {
     public String extractUsername(String jwt) {
         return extractClaim(jwt, Claims::getSubject);
     }
+    public Long extractUserId(String jwt) {
+        return extractClaim(jwt, claims -> claims.get("userId", Long.class));
+    }
     public <T> T extractClaim(String jwt, Function<Claims, T> claimsResolver){
         final Claims claims = extractAllClaims(jwt);
         return claimsResolver.apply(claims);
@@ -34,8 +37,10 @@ public class JwtService {
                 .signWith(getSigningKey(), SignatureAlgorithm.HS256)
                 .compact();
     }
-    public String generateToken(UserDetails userDetails){
-        return generateToken(new HashMap<>(), userDetails);
+    public String generateToken(UserDetails userDetails, Long userId) {
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("userId", userId);
+        return generateToken(claims, userDetails);
     }
     public boolean isTokenValid(String jwt, UserDetails userDetails){
         final String username = extractUsername(jwt);

@@ -11,5 +11,6 @@ import lombok.NoArgsConstructor;
 @NoArgsConstructor
 public class UserProfileResponse {
     String username;
+    Long userId;
     String role;
 }
